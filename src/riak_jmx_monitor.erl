@@ -10,6 +10,10 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+-endif.
+
 -record(state, { pid,
                  port }).
 
@@ -147,3 +151,23 @@ wait_for_exit(Port, Pid) ->
             timeout
     end.
 
+
+%% ===================================================================
+%% EUnit tests
+%% ===================================================================
+-ifdef(TEST).
+
+start_link_test() ->    
+    %% Test that init will return ignore if 
+    %% riak_core http config info is unavailable.
+    ?assertEqual(ignore, start_link()),
+    %% Test the init returns ignore if riak_jmx
+    %% is not enabled.
+    application:set_env(riak_core, http, [{"127.0.0.1", 8098}]),
+    application:set_env(riak_jmx, enabled, false),
+    ?assertEqual(ignore, start_link()),
+    application:load(riak_jmx),
+    application:set_env(riak_jmx, enabled, true),    
+    ?assertMatch({ok, _}, start_link()).    
+
+-endif.
