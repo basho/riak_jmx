@@ -158,6 +158,8 @@ wait_for_exit(Port, Pid) ->
 -ifdef(TEST).
 
 start_link_test() ->    
+    %% Make sure riak_jmx is not already loaded
+    application:unload(riak_jmx),
     %% Test that init will return ignore if 
     %% riak_core http config info is unavailable.
     ?assertEqual(ignore, start_link()),
@@ -168,6 +170,8 @@ start_link_test() ->
     ?assertEqual(ignore, start_link()),
     application:load(riak_jmx),
     application:set_env(riak_jmx, enabled, true),    
-    ?assertMatch({ok, _}, start_link()).    
+    ?assertMatch({ok, _}, start_link()),
+    %% Cleanup
+    application:unload(riak_jmx).
 
 -endif.
