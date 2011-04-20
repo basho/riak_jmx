@@ -1,0 +1,5 @@
+ebin/*.beam
+deps
+java_src/build
+priv/*.jar
+
