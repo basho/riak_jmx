@@ -1,12 +1,8 @@
-% -*- mode: erlang -*-
-{application, 
+%% -*- mode: erlang -*-
+{application,
  riak_jmx,
  [{description,  "riak_jmx"},
-  {vsn,          "0.2.1"},
-  {modules,      ['riak_jmx', 
-                  'riak_jmx_app', 
-                  'riak_jmx_monitor',
-                  'riak_jmx_sup']},
+  {vsn,          "0.2.2"},
   {registered,   []},
   {mod,          {riak_jmx_app, []}},
   {env,          [{enabled, false}, {port, 41110}]},
