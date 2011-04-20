@@ -6,16 +6,14 @@ all: deps compile
 
 compile:
 	./rebar compile
-	make -C java_src
 
 deps:
 	./rebar get-deps
 
 clean:
 	./rebar clean
-	make -C java_src clean
 
-distclean: clean 
+distclean: clean
 	./rebar delete-deps
 
 eunit:
