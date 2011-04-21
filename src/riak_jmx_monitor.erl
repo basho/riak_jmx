@@ -38,8 +38,8 @@ init([]) ->
     %% Get HTTP IP/Port from riak_core config; if this fails, we need to
     %% shutdown this process as riak_jmx requires an HTTP endpoint to connect
     %% to.
-    case riak_core_config:http_ip_and_port() of
-        {WebIp, WebPort} ->
+    case http_ip_port() of
+        {ok, WebIp, WebPort} ->
             ok;
         error ->
             WebIp = undefined, WebPort = undefined,
@@ -151,6 +151,30 @@ wait_for_exit(Port, Pid) ->
             timeout
     end.
 
+http_ip_port() ->
+    case application:get_env(riak_core, http) of
+        {ok, [{WebIp, WebPort} | _]} ->
+            {ok, WebIp, WebPort};
+        {ok, []} ->
+            error_logger:error_msg("HTTP is disabled in riak_core; riak_jmx requires it.\n"),
+            error;
+        undefined ->
+            %% Fallback to pre-0.14 HTTP config.
+            %% TODO: Remove in 0.16
+            WebIpCfg = application:get_env(riak_core, web_ip),
+            WebPortCfg = application:get_env(riak_core, web_port),
+            case {WebIpCfg, WebPortCfg} of
+                {{ok, WebIp}, {ok, WebPort}} ->
+                    error_logger:info_msg("Found HTTP config for riak_jmx using pre-0.14 config "
+                                          "values; please update the config file to use new HTTP "
+                                          "binding configuration values.\n"),
+                    {ok, WebIp, WebPort};
+                _ ->
+                    error_logger:error_msg("HTTP is not configured in riak_core; "
+                                           "riak_jmx requires it.\n"),
+                    error
+            end
+    end.
 
 %% ===================================================================
 %% EUnit tests
