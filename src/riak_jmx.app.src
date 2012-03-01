@@ -6,4 +6,4 @@
   {registered,   []},
   {mod,          {riak_jmx_app, []}},
   {env,          [{enabled, false}, {port, 41110}]},
-  {applications, [kernel, stdlib, sasl, crypto]}]}.
+  {applications, [kernel, stdlib, sasl, crypto, riak_kv]}]}.
