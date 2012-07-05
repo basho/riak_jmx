@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ##
 ## Use exec so that the PID doesn't change when invoked
