@@ -52,9 +52,9 @@ public class Dump {
                 String name = attr.getName();
                 Object value = mbs.getAttribute(riakBeanName, name);
                 results.object().key(name);
-                if(value instanceof Float)
+                if(value instanceof Number)
                 {
-                    results.value(((Float)value).longValue());
+                    results.value(((Number)value).longValue());
                 } else {
                     results.value(value);
                 }
