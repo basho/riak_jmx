@@ -50,10 +50,9 @@ public class Dump {
             for (MBeanAttributeInfo attr: attribs)
             {
                 String name = attr.getName();
-                Object value = mbs.getAttribute(riakBeanName, attr.getName());
-                Class klazz = value.getClass();
+                Object value = mbs.getAttribute(riakBeanName, name);
                 results.object().key(name);
-                if(klazz == Float.class)
+                if(value instanceof Float)
                 {
                     results.value(((Float)value).longValue());
                 } else {
