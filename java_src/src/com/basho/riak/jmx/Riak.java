@@ -53,6 +53,7 @@ public class Riak implements RiakMBean {
             Riak.this.setNodePutFsmTime99(getStat(stats, "node_put_fsm_time_99"));
             Riak.this.setNodePutFsmTimeMax(getStat(stats, "node_put_fsm_time_100"));
             Riak.this.setNodePutFsmTimeMean(getStat(stats, "node_put_fsm_time_mean"));
+            Riak.this.setNodePutFsmTimeMedian(getStat(stats, "node_put_fsm_time_median"));
             Riak.this.setReadRepairs(stats.getInt("read_repairs"));
             Riak.this.setReadRepairsTotal(stats.getInt("read_repairs_total"));
         }
