@@ -2,7 +2,7 @@
 {application,
  riak_jmx,
  [{description,  "riak_jmx"},
-  {vsn,          "1.3.0"},
+  {vsn,          "1.4.0"},
   {registered,   []},
   {mod,          {riak_jmx_app, []}},
   {env,          [{enabled, false}, {port, 41110}]},
