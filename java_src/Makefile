@@ -2,15 +2,13 @@
 all: jar
 
 compile:
-	@mkdir -p build
-	@javac -d build `find src -name "*.java"`
+	@mvn compile
 
 jar: compile
-	@mkdir -p dist
-	@jar cf ../priv/riak_jmx.jar -C build .
+	@mvn package
+	@mv target/riak-jmx-1.4.0-jar-with-dependencies.jar ../priv/riak_jmx.jar
 
 clean:
-	@rm -rf build dist
-	@rm -rf ../priv/riak_jmx.jar
+	@mvn clean
 
 

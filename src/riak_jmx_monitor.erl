@@ -52,9 +52,13 @@ init([]) ->
             process_flag(trap_exit, true),
             {ok, JMXPort} = application:get_env(riak_jmx, port),
             %% Spin up the JMX server
-            Cmd = ?FMT("./riak_jmx.sh ~s ~s ~s", [WebIp, 
-                                                  integer_to_list(WebPort),
-                                                  integer_to_list(JMXPort)]),
+            JMXFormatString = "java -server -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=~s -jar riak_jmx.jar ~s ~s",
+
+
+            Cmd = ?FMT(JMXFormatString, [integer_to_list(JMXPort),
+                                         WebIp, 
+                                         integer_to_list(WebPort)]),
+            lager:info(Cmd),
             case start_sh(Cmd, priv_dir()) of
                 {ok, State} ->
                     error_logger:info_msg("JMX server monitor ~s started.\n",
