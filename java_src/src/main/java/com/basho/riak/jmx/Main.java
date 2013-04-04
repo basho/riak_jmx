@@ -54,9 +54,7 @@ public class Main {
             OtpErlangObject value = tuple.elementAt(1);
             System.out.println(name);
 
-
             CtClass fieldType = pool.get("java.lang.Object");
-
 
             if(value instanceof OtpErlangFloat) {
                 fieldType = CtClass.floatType;
@@ -90,23 +88,23 @@ public class Main {
 
             CtField f = new CtField(fieldType, name.toString(), mbeanClazz);
             mbeanClazz.addField(f);
-            mbeanClazz.addMethod(CtNewMethod.getter("get_" + name.toString(), f));
-            mbeanClazz.addMethod(CtNewMethod.setter("set_" + name.toString(), f));
+            mbeanClazz.addMethod(CtNewMethod.getter("get" + name.toString(), f));
+            mbeanClazz.addMethod(CtNewMethod.setter("set" + name.toString(), f));
 
             mbeanInterface.addMethod(
                 CtNewMethod.abstractMethod(
                     fieldType, 
-                    ("get_" + name.toString()), 
+                    ("get" + name.toString()), 
                     new CtClass[0], 
                     new CtClass[0], 
                     mbeanInterface
                 )
             );
-            
+
             mbeanInterface.addMethod(
                 CtNewMethod.abstractMethod(
                     CtClass.voidType, 
-                    ("set_" + name.toString()), 
+                    ("set" + name.toString()), 
                     new CtClass[] {fieldType}, 
                     new CtClass[0], 
                     mbeanInterface
