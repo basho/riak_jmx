@@ -52,10 +52,11 @@ init([]) ->
             process_flag(trap_exit, true),
             {ok, JMXPort} = application:get_env(riak_jmx, port),
             %% Spin up the JMX server
-            JMXFormatString = "java -server -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=~s -jar riak_jmx.jar ~s ~s",
+            JMXFormatString = "java -server -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=~s -jar riak_jmx.jar ~s ~s ~s ~s",
 
 
             Cmd = ?FMT(JMXFormatString, [integer_to_list(JMXPort),
+                                         node(), erlang:get_cookie(),
                                          WebIp, 
                                          integer_to_list(WebPort)]),
             lager:info(Cmd),

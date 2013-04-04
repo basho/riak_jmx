@@ -1,7 +1,7 @@
 %% Riak EnterpriseDS
 %% @copyright 2007-2010 Basho Technologies, Inc. All Rights Reserved.
 -module(riak_jmx).
--export([start/0, stop/0, stop/1]).
+-export([start/0, stop/0, stop/1, stats/0]).
 
 start() ->
     riak_core_util:start_app_deps(riak_jmx),
@@ -16,4 +16,9 @@ stop(Reason) ->
     %  to really halt the runtime, which is what we need here.
     error_logger:info_msg(io_lib:format("~p~n",[Reason])),
     init:stop().    
+
+stats() ->
+    proplists:delete(disk, riak_kv_stat:get_stats()) ++
+        riak_core_stat:get_stats() ++
+        riak_repl_stats:get_stats(). 
 
