@@ -102,14 +102,12 @@ public class Main {
                     mbeanInterface
                 )
             );
-
-            CtClass[] params = new CtClass[1];
-            params[0] = fieldType;
+            
             mbeanInterface.addMethod(
                 CtNewMethod.abstractMethod(
                     CtClass.voidType, 
                     ("set_" + name.toString()), 
-                    params, 
+                    new CtClass[] {fieldType}, 
                     new CtClass[0], 
                     mbeanInterface
                 )
