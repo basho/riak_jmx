@@ -5,5 +5,10 @@
   {vsn,          "1.4.0"},
   {registered,   []},
   {mod,          {riak_jmx_app, []}},
-  {env,          [{enabled, false}, {port, 41110}]},
+  {env,          [
+                    {enabled, false}, 
+                    {port, 41110},
+                    {retries, 10},
+                    {sleep_minutes, 10}
+                 ]},
   {applications, [kernel, stdlib, sasl, crypto, riak_kv]}]}.
