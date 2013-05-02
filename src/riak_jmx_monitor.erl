@@ -15,10 +15,12 @@
 -endif.
 
 -record(state, { pid,
-                 port }).
+                 port,
+                 retry=0 }).
 
 -define(FMT(Str, Args), lists:flatten(io_lib:format(Str, Args))).
-
+-define(MAX_RETRY, 10).
+-define(SLEEP_TIME, 600000). % ten minutes
 %% ====================================================================
 %% API
 %% ====================================================================
@@ -35,41 +37,12 @@ stop() ->
 %% ====================================================================
 
 init([]) ->
-    %% Get HTTP IP/Port from riak_core config; if this fails, we need to
-    %% shutdown this process as riak_jmx requires an HTTP endpoint to connect
-    %% to.
-    case riak_core_config:http_ip_and_port() of
-        {WebIp, WebPort} ->
-            ok;
-        error ->
-            WebIp = undefined, WebPort = undefined,
-            throw(ignore)
-    end,
-
     case application:get_env(riak_jmx, enabled) of
         {ok, true} ->
             %% Trap exits so that we get a chance to stop the JMX process
             process_flag(trap_exit, true),
-            {ok, JMXPort} = application:get_env(riak_jmx, port),
-            %% Spin up the JMX server
-            JMXFormatString = "java -server -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=~s -jar riak_jmx.jar ~s ~s",
-
-
-            Cmd = ?FMT(JMXFormatString, [integer_to_list(JMXPort),
-                                         WebIp, 
-                                         integer_to_list(WebPort)]),
-            lager:info(Cmd),
-            case start_sh(Cmd, priv_dir()) of
-                {ok, State} ->
-                    error_logger:info_msg("JMX server monitor ~s started.\n",
-                                          [State#state.pid]),
-                    {ok, State};
-                {error, {stopped, Rc}} ->
-                    error_logger:error_msg("Failed to start JMX server monitor: ~p\n",
-                                           [Rc]),
-                    {stop, {start_sh_failed, Rc}}
-            end;
-
+            Port = jmx(),
+            {ok, #state{ retry = 0, port = Port }};
         _ ->
             ignore
     end.
@@ -77,21 +50,33 @@ init([]) ->
 handle_call(_Request, _From, State) ->
     {reply, ignore, State}.
 
-
 handle_cast(stop_jmx, State) ->
     {stop, normal, State}.
 
-
-handle_info({Port, {data, _}}, #state { port = Port } = State) ->
-    %% Ignore data from the script
+%% Set the state to contain the successfully opened port
+handle_info({Port, {data, {eol, Pid}}}, State) ->
+    lager:info("JMX server monitor ~s started.",[Pid]),
+    {noreply, State#state { pid = Pid, port = Port, retry = 0 }};
+%% Log data from the port at a debug level
+handle_info({Port, {data, Data}}, #state { port = Port } = State) ->
+    lager:info("[riak_jmx.jar] ~s", Data),
     {noreply, State};
-handle_info({Port, {exit_status, Rc}}, #state { port = Port } = State) ->
-    error_logger:info_msg("JMX server monitor ~s exited with code ~p.\n",
+%% If the port has exited ?MAX_RETRY times, just wait longer!
+handle_info({Port, {exit_status, Rc}}, #state { port = Port, retry = ?MAX_RETRY } = State) ->
+    lager:info("JMX server monitor ~s exited with code ~p.",
                           [State#state.pid, Rc]),
-    {stop, normal, State#state { pid = undefined }};
+    timer:sleep(?SLEEP_TIME),
+    Port = jmx(),
+    {noreply, State#state { port = Port, pid = undefined }};
+%% If the port has not yet exited ?MAX_RETRY times, retry
+handle_info({Port, {exit_status, Rc}}, #state { port = Port } = State) ->
+    lager:info("JMX server monitor ~s exited with code ~p. Retrying.",
+                          [State#state.pid, Rc]),
+    Port = jmx(),
+    {noreply, State#state { port = Port, pid = undefined }};
 handle_info({'EXIT', _, _}, State) ->
+    lager:warning("riak_jmx_monitor recieved recieved an 'EXIT'"),
     {stop, normal, State}.
-
 
 terminate(_Reason, #state { pid = undefined }) ->
     %% JMX server isn't running; nothing to do
@@ -115,6 +100,32 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal functions
 %% ====================================================================
 
+jmx() ->
+    %% We're going to pull all of the settings out of the app.config
+    %% again, in case they've changed
+    {ok, JMXPort} = application:get_env(riak_jmx, port),
+    %% Get HTTP IP/Port from riak_core config; if this fails, we need to
+    %% shutdown this process as riak_jmx requires an HTTP endpoint to connect
+    %% to.
+    case riak_core_config:http_ip_and_port() of
+        {WebIp, WebPort} ->
+            %% Spin up the JMX server
+            JMXFormatString = "java -server " 
+                ++ "-Dcom.sun.management.jmxremote.authenticate=false " 
+                ++ "-Dcom.sun.management.jmxremote.ssl=false "
+                ++ "-Dcom.sun.management.jmxremote.port=~s "
+                ++ "-jar riak_jmx.jar ~s ~s",
+
+            Cmd = ?FMT(JMXFormatString, [integer_to_list(JMXPort),
+                                         WebIp, 
+                                         integer_to_list(WebPort)]),
+            lager:info(Cmd),
+            start_sh(Cmd, priv_dir());
+        error ->
+            lager:error("No WebIp and/or WebPort defined in app.config. JMX not starting"),
+            undefined
+    end.
+    
 priv_dir() ->
     case code:priv_dir(riak_jmx) of
         {error, bad_name} ->
@@ -136,19 +147,12 @@ start_sh(Cmd, Dir) ->
                       exit_status, {line, 16384},
                       use_stdio, stderr_to_stdout]),
     link(Port),
-    receive
-        {Port, {data, {eol, Pid}}} ->
-            {ok, #state { pid = Pid, port = Port }};
-
-        {Port, {exit_status, Rc}} ->
-            {error, {stopped, Rc}}
-    end.
-
+    Port.
 
 wait_for_exit(Port, Pid) ->
     receive
         {Port, {exit_status, Rc}} ->
-            error_logger:info_msg("JMX server monitor ~s exited with code ~p.\n",
+            lager:error("JMX server monitor ~s exited with code ~p.",
                                   [Pid, Rc]),
             ok
     after 5000 ->
