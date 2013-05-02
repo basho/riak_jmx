@@ -19,7 +19,7 @@
                  retry=0 }).
 
 -define(FMT(Str, Args), lists:flatten(io_lib:format(Str, Args))).
--define(MAX_RETRY, application:get_env(riak_jmx, retries)).
+-define(MAX_RETRY, 10).
 -define(SLEEP_TIME, application:get_env(riak_jmx, sleep_minutes) * 60000). % ten minutes
 %% ====================================================================
 %% API
