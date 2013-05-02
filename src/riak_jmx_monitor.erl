@@ -19,8 +19,8 @@
                  retry=0 }).
 
 -define(FMT(Str, Args), lists:flatten(io_lib:format(Str, Args))).
--define(MAX_RETRY, 10).
--define(SLEEP_TIME, 600000). % ten minutes
+-define(MAX_RETRY, application:get_env(riak_jmx, retries)).
+-define(SLEEP_TIME, application:get_env(riak_jmx, sleep_minutes) * 60000). % ten minutes
 %% ====================================================================
 %% API
 %% ====================================================================
@@ -53,30 +53,37 @@ handle_call(_Request, _From, State) ->
 handle_cast(stop_jmx, State) ->
     {stop, normal, State}.
 
+%% Starts JMX
+handle_info(start, State) ->
+    Port = jmx(),
+    {noreply, State#state { port = Port, pid = undefined }};
 %% Set the state to contain the successfully opened port
-handle_info({Port, {data, {eol, Pid}}}, State) ->
+handle_info({Port, {data, {eol, Pid}}}, #state{ pid = undefined } = State) ->
     lager:info("JMX server monitor ~s started.",[Pid]),
     {noreply, State#state { pid = Pid, port = Port, retry = 0 }};
 %% Log data from the port at a debug level
-handle_info({Port, {data, Data}}, #state { port = Port } = State) ->
-    lager:info("[riak_jmx.jar] ~s", Data),
+handle_info({Port, {data, {_Type, Data}}}, #state { port = Port, pid = Pid } = State) 
+    when is_list(Pid) ->
+    lager:info("[riak_jmx.jar] ~s", [Data]),
     {noreply, State};
 %% If the port has exited ?MAX_RETRY times, just wait longer!
 handle_info({Port, {exit_status, Rc}}, #state { port = Port, retry = ?MAX_RETRY } = State) ->
     lager:info("JMX server monitor ~s exited with code ~p.",
                           [State#state.pid, Rc]),
-    timer:sleep(?SLEEP_TIME),
-    Port = jmx(),
-    {noreply, State#state { port = Port, pid = undefined }};
+    safe_port_close(Port),
+    erlang:send_after(?SLEEP_TIME, self(), start),
+    {noreply, State#state { port = undefined, pid = undefined }};
 %% If the port has not yet exited ?MAX_RETRY times, retry
 handle_info({Port, {exit_status, Rc}}, #state { port = Port } = State) ->
     lager:info("JMX server monitor ~s exited with code ~p. Retrying.",
                           [State#state.pid, Rc]),
-    Port = jmx(),
-    {noreply, State#state { port = Port, pid = undefined }};
-handle_info({'EXIT', _, _}, State) ->
-    lager:warning("riak_jmx_monitor recieved recieved an 'EXIT'"),
-    {stop, normal, State}.
+    safe_port_close(Port),
+    erlang:send_after(2000, self(), start),
+    {noreply, State#state { port = undefined, pid = undefined }};
+handle_info({'EXIT', _, _}, #state { port = Port } = State) ->
+    lager:info("riak_jmx_monitor received an 'EXIT', but doesn't care"),
+    safe_port_close(Port),
+    {noreply, State#state { port = undefined, pid = undefined }}.
 
 terminate(_Reason, #state { pid = undefined }) ->
     %% JMX server isn't running; nothing to do
@@ -152,13 +159,17 @@ start_sh(Cmd, Dir) ->
 wait_for_exit(Port, Pid) ->
     receive
         {Port, {exit_status, Rc}} ->
-            lager:error("JMX server monitor ~s exited with code ~p.",
+            lager:info("JMX server monitor ~s exited with code ~p.",
                                   [Pid, Rc]),
             ok
     after 5000 ->
             timeout
     end.
 
+safe_port_close(Port) when is_pid(Port) ->
+    port_close(Port); 
+safe_port_close(_Port) ->
+    meh.
 
 %% ===================================================================
 %% EUnit tests
