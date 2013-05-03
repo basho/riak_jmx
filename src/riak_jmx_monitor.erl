@@ -117,13 +117,15 @@ jmx() ->
     case riak_core_config:http_ip_and_port() of
         {WebIp, WebPort} ->
             %% Spin up the JMX server
-            JMXFormatString = "java -server " 
-                ++ "-Dcom.sun.management.jmxremote.authenticate=false " 
+            JMXFormatString = "java -server "
+                ++ "-Dcom.sun.management.jmxremote.authenticate=false "
                 ++ "-Dcom.sun.management.jmxremote.ssl=false "
                 ++ "-Dcom.sun.management.jmxremote.port=~s "
-                ++ "-jar riak_jmx.jar ~s ~s",
+                ++ "-jar riak_jmx.jar ~s ~s ~s ~s",
+
 
             Cmd = ?FMT(JMXFormatString, [integer_to_list(JMXPort),
+                                         node(), erlang:get_cookie(),
                                          WebIp, 
                                          integer_to_list(WebPort)]),
             lager:info(Cmd),
