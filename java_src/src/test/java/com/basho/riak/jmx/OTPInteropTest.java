@@ -11,6 +11,8 @@ import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.mockito.Mockito.*;
+
 @RunWith(JUnit4.class)
 public class OTPInteropTest {
 
@@ -55,13 +57,32 @@ public class OTPInteropTest {
         assertNull("ExternalFun should be null", output);
     }
 
+    // What business does a stat have being a fun?
     @Test
     public void testConvertOtpErlangFun() {
-        // need a mock
+        OtpErlangFun erlfun = mock(OtpErlangFun.class);
+        Object output = OTPInterop.convert(erlfun);
+        assertNull("ErlangFun -> null", output);
     }
 
+
+    // List is the tricksiest of all the tests, because
+    // it recurses into list elements.
     @Test
     public void testConvertOtpErlangList() {
+        OtpErlangObject listInsides[] = {
+            new OtpErlangDouble(12.34d), 
+            new OtpErlangAtom("atom"),
+            new OtpErlangLong(1234l)
+        };
+        Object output = OTPInterop.convert(new OtpErlangList(listInsides));
+        assertEquals("return type java.util.ArrayList", 
+                     java.util.ArrayList.class,
+                     output.getClass());
+        ArrayList l = (ArrayList)output;
+        assertEquals("list double", 12.34d, l.get(0));
+        assertEquals("list atom", "atom", l.get(1));
+        assertEquals("list long", 1234l, l.get(2));
     }
 
     @Test
@@ -126,17 +147,23 @@ public class OTPInteropTest {
 
     @Test
     public void testConvertOtpErlangPid() {
-        // need a mock
+        OtpErlangPid erlpid = mock(OtpErlangPid.class);
+        Object output = OTPInterop.convert(erlpid);
+        assertNull("ErlangPid -> null", output);
     }
 
     @Test
     public void testConvertOtpErlangPort() {
-        // need a mock
+        OtpErlangPort port = mock(OtpErlangPort.class);
+        Object output = OTPInterop.convert(port);
+        assertNull("ErlangPort -> null", output);
     }
 
     @Test
     public void testConvertOtpErlangRef() {
-        // need a mock
+        OtpErlangRef ref = mock(OtpErlangRef.class);
+        Object output = OTPInterop.convert(ref);
+        assertNull("ErlangRef -> null", output);
     }
 
     // Strings are Lists. I'm from Holland. Isn't that veird?
