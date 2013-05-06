@@ -11,6 +11,8 @@ public class OTPInterop {
             return ((OtpErlangDouble)value).doubleValue();
         } else if (value instanceof OtpErlangLong) {
             return ((OtpErlangLong)value).longValue();
+        } else if (value instanceof OtpErlangBitstr) {
+            return new String(((OtpErlangBitstr)value).binaryValue());
         } else if (value instanceof OtpErlangBinary) {
             return new String(((OtpErlangBinary)value).binaryValue());
         } else if (value instanceof OtpErlangString) {
@@ -30,10 +32,9 @@ public class OTPInterop {
             }
             return val;
         } else {
-            System.out.println("riak jmx has found a JInterface class it did not expect");
-            System.out.println("  please open a ticket with Basho. Tell them that ");
-            System.out.println("   riak_jmx expected the class " + value.getClass());
-
+            // System.out.println("riak jmx has found a JInterface class it did not expect");
+            // System.out.println("  please open a ticket with Basho. Tell them that ");
+            // System.out.println("   riak_jmx expected the class " + value.getClass());
             /**
             Possible types:
                 OtpErlangAtom, 
@@ -50,7 +51,7 @@ public class OTPInterop {
                 OtpErlangTuple
             */
         }
-        return new Object();
+        return null;
     }
 
 
