@@ -15,7 +15,7 @@ import java.lang.reflect.*;
 
 public class RiakMBeanClassFactory {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     public static Riak createAndRegisterMBean() throws Exception {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -59,8 +59,13 @@ public class RiakMBeanClassFactory {
                 System.out.println("       " + fieldType.toString());
             }
 
-            Method setter = mbean.getClass().getDeclaredMethod("set" + name.toString(), new Class[] {fieldType});
-            setter.invoke(mbean, new Object[] {val});
+            try {
+                Method setter = mbean.getClass().getDeclaredMethod("set" + name.toString(), new Class[] {fieldType});
+                setter.invoke(mbean, new Object[] {val});
+            } catch(java.lang.NoSuchMethodException nsme) {
+                System.out.println("New stat " + name.toString() + " detected. Restarting riak_jmx");
+                System.exit(1);
+            }
         }
         return mbean;
     }
