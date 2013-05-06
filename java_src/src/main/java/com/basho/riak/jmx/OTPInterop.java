@@ -3,6 +3,9 @@ package com.basho.riak.jmx;
 import com.ericsson.otp.erlang.*;
 import java.util.ArrayList;
 
+/***
+ * This class exists to translate between erlang and java
+ */
 public class OTPInterop {
 
     public static Object convert(OtpErlangObject value) {
@@ -32,9 +35,6 @@ public class OTPInterop {
             }
             return val;
         } else {
-            // System.out.println("riak jmx has found a JInterface class it did not expect");
-            // System.out.println("  please open a ticket with Basho. Tell them that ");
-            // System.out.println("   riak_jmx expected the class " + value.getClass());
             /**
             Possible types:
                 OtpErlangAtom, 
@@ -49,6 +49,18 @@ public class OTPInterop {
                 OtpErlangRef, 
                 OtpErlangString, 
                 OtpErlangTuple
+            
+            The only types caught in this else will be:
+                OtpErlangExternalFun, 
+                OtpErlangFun, 
+                OtpErlangPid, 
+                OtpErlangPort, 
+                OtpErlangRef, 
+                OtpErlangString, 
+                OtpErlangTuple
+
+            These data types have no place in stats. And will just be ignored.
+
             */
         }
         return null;

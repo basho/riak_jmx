@@ -15,13 +15,17 @@ import java.lang.reflect.*;
 
 public class Main {
 
+    /**
+     * This main method is designed to crash in the face of
+     * adversity. Let the erlang riak_jmx_monitor be responsible
+     * for wether or not it's running.
+     */
     public static void main(String[] args) throws Exception {
 
         String node = args[0];
         String cookie = args[1];
         String host = args[2];
-        int port = Integer.decode(args[3]).intValue();
-
+        
         OtpSelf self = new OtpSelf("riak_jmx@" + host, cookie);
         OtpPeer riak  = new OtpPeer(node); 
         OtpConnection connection = self.connect(riak); 
@@ -48,7 +52,10 @@ public class Main {
         }
     }
     
-
+    /**
+     * makeBeanClass generates the getters and setters for the RiakMBean
+     * based on the data types from the riak_jmx:stats call.
+     */
     private static void makeBeanClass(OtpErlangList stats) throws Exception {
         ClassPool pool = ClassPool.getDefault();
         CtClass mbeanInterface = pool.makeInterface("com.basho.riak.jmx.RiakMBean");
@@ -86,8 +93,7 @@ public class Main {
                     new CtClass[0], 
                     mbeanInterface
                 )
-            );
-            
+            );    
         }
         mbeanInterface.toClass();
         mbeanClazz.addInterface(mbeanInterface);

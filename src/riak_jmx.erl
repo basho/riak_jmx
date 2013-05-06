@@ -19,6 +19,4 @@ stop(Reason) ->
 
 stats() ->
     proplists:delete(disk, riak_kv_stat:get_stats()) ++
-        riak_core_stat:get_stats() ++
-        riak_repl_stats:get_stats(). 
-
+        riak_core_stat:get_stats(). 
