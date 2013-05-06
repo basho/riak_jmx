@@ -11,5 +11,6 @@ jar: compile
 
 clean:
 	@mvn clean
+	@rm ../priv/riak_jmx.jar
 
 
