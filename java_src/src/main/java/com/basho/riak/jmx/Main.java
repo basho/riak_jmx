@@ -10,9 +10,6 @@ import javax.management.ObjectName;
 
 import com.ericsson.otp.erlang.*;
 
-import javassist.*;
-import java.lang.reflect.*;
-
 public class Main {
 
     /**
@@ -34,81 +31,20 @@ public class Main {
         } catch (Exception e) {
             System.out.println("error connecting to " + node);
             throw e;
-        }
+        } 
 
-        OtpErlangList stats = getStats(connection); 
-
-        /*
-        There can be no references to any class we're modifying with javassist:
-
-        * com.basho.riak.jmx.Riak
-        * com.basho.riak.jmx.RiakMBean
-
-        Before the below function is called *AND* there can be no static methods 
-        in *THIS* class that make use of those classes either.
-
-        */
-        makeBeanClass(stats);
-
-        Riak r = RiakMBeanClassFactory.createAndRegisterMBean();
-
+        Riak r = new Riak(connection);
+        registerMBean(r);
         while (true) {
-            RiakMBeanClassFactory.update(r, connection);
+            r.update();
             Thread.sleep(refreshRate);
         }
     }
     
-    /**
-     * makeBeanClass generates the getters and setters for the RiakMBean
-     * based on the data types from the riak_jmx:stats call.
-     */
-    private static void makeBeanClass(OtpErlangList stats) throws Exception {
-        ClassPool pool = ClassPool.getDefault();
-        CtClass mbeanInterface = pool.makeInterface("com.basho.riak.jmx.RiakMBean");
-        CtClass mbeanClazz = pool.makeClass("com.basho.riak.jmx.Riak");
-
-        Iterator<OtpErlangObject> it = stats.iterator();
-        while(it.hasNext()) {
-            OtpErlangTuple tuple = (OtpErlangTuple)it.next();
-            OtpErlangAtom name = (OtpErlangAtom)tuple.elementAt(0);
-            OtpErlangObject value = tuple.elementAt(1);
-
-            Object objVal = OTPInterop.convert(value);
-            CtClass fieldType = pool.get(objVal.getClass().getCanonicalName());
-
-            CtField f = new CtField(fieldType, name.toString(), mbeanClazz);
-            mbeanClazz.addField(f);
-            mbeanClazz.addMethod(CtNewMethod.getter("get" + name.toString(), f));
-            mbeanClazz.addMethod(CtNewMethod.setter("set" + name.toString(), f));
-
-            mbeanInterface.addMethod(
-                CtNewMethod.abstractMethod(
-                    fieldType, 
-                    ("get" + name.toString()), 
-                    new CtClass[0], 
-                    new CtClass[0], 
-                    mbeanInterface
-                )
-            );
-
-            mbeanInterface.addMethod(
-                CtNewMethod.abstractMethod(
-                    CtClass.voidType, 
-                    ("set" + name.toString()), 
-                    new CtClass[] {fieldType}, 
-                    new CtClass[0], 
-                    mbeanInterface
-                )
-            );    
-        }
-        mbeanInterface.toClass();
-        mbeanClazz.addInterface(mbeanInterface);
-        mbeanClazz.toClass();
-    }
-
-    private static OtpErlangList getStats(OtpConnection connection) throws Exception {
-        connection.sendRPC("riak_jmx", "stats", new OtpErlangList());
-        return (OtpErlangList)connection.receiveRPC(); 
+    private static void registerMBean(Riak mbean) throws Exception {
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        ObjectName name = new ObjectName("com.basho.riak:type=Riak");
+        mbs.registerMBean(mbean, name);
     }
 
     public static Object[] validateArgs(String[] args) throws Exception {
