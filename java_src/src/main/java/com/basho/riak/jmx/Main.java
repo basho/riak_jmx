@@ -20,13 +20,13 @@ public class Main {
      * adversity. Let the erlang riak_jmx_monitor be responsible
      * for wether or not it's running.
      */
-    public static void main(String[] args) throws Exception {
-
-        String node = args[0];
-        String cookie = args[1];
-        String host = args[2];
-        
-        OtpSelf self = new OtpSelf("riak_jmx@" + host, cookie);
+    public static void main(String[] stringArgs) throws Exception {
+        Object[] args = validateArgs(stringArgs);
+        String node = (String)args[0];
+        String cookie = (String)args[1];
+        int refreshRate = (Integer)args[2];
+ 
+        OtpSelf self = new OtpSelf("riak_jmx_" + node, cookie);
         OtpPeer riak  = new OtpPeer(node); 
         OtpConnection connection = self.connect(riak); 
 
@@ -48,7 +48,7 @@ public class Main {
 
         while (true) {
             RiakMBeanClassFactory.update(r, connection);
-            Thread.sleep(30000);
+            Thread.sleep(refreshRate);
         }
     }
     
@@ -103,6 +103,26 @@ public class Main {
     private static OtpErlangList getStats(OtpConnection connection) throws Exception {
         connection.sendRPC("riak_jmx", "stats", new OtpErlangList());
         return (OtpErlangList)connection.receiveRPC(); 
+    }
+
+    public static Object[] validateArgs(String[] args) throws Exception {
+        if(args.length != 3) {
+            throw new Exception("riak_jmx invalid argurment lenght. Expected 3, got " + args.length);
+        }
+        int refreshRate = 30000;
+        try {
+            refreshRate = Integer.parseInt(args[2]) * 1000;
+        } catch (NumberFormatException nfe) {
+            System.out.println(
+                "Refresh Rate not parseable (" + args[2] + "), using 30 seconds as default.");
+        }
+
+        Object[] retval = {
+            args[0],
+            args[1],
+            refreshRate
+        };
+        return retval;
     }
 
 }

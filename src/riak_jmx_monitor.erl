@@ -121,13 +121,13 @@ jmx() ->
                 ++ "-Dcom.sun.management.jmxremote.authenticate=false "
                 ++ "-Dcom.sun.management.jmxremote.ssl=false "
                 ++ "-Dcom.sun.management.jmxremote.port=~s "
-                ++ "-jar riak_jmx.jar ~s ~s ~s ~s",
+                ++ "-jar riak_jmx.jar ~s ~s ~s",
 
+            {ok, JMXRefreshRate} = application:get_env(riak_jmx, jmx_refresh_seconds),
 
             Cmd = ?FMT(JMXFormatString, [integer_to_list(JMXPort),
                                          node(), erlang:get_cookie(),
-                                         WebIp, 
-                                         integer_to_list(WebPort)]),
+                                         integer_to_list(JMXRefreshRate)]),
             lager:info(Cmd),
             start_sh(Cmd, priv_dir());
         error ->
