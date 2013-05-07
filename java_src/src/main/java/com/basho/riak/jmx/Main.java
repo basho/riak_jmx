@@ -28,7 +28,13 @@ public class Main {
  
         OtpSelf self = new OtpSelf("riak_jmx_" + node, cookie);
         OtpPeer riak  = new OtpPeer(node); 
-        OtpConnection connection = self.connect(riak); 
+        OtpConnection connection = null;
+        try{
+            connection = self.connect(riak);
+        } catch (Exception e) {
+            System.out.println("error connecting to " + node);
+            throw e;
+        }
 
         OtpErlangList stats = getStats(connection); 
 
