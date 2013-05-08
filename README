@@ -11,11 +11,9 @@ java -server -Dcom.sun.management.jmxremote.authenticate=false \
              -jar ./priv/riak_jmx.jar 127.0.0.1 riak 127.0.0.1
 ```
 
-The riak_jmx java code builds the java bean dynamically
-with javassist based on a JInterface call to stats.
+The riak_jmx java code usese DynamicMBean populated
+by a JInterface call to stats.
 
 More information on classes used below:
-http://www.csg.ci.i.u-tokyo.ac.jp/~chiba/javassist/html/index.html
-http://www.csg.ci.i.u-tokyo.ac.jp/~chiba/javassist/tutorial/tutorial.html
+https://weblogs.java.net/blog/emcmanus/archive/2006/11/a_real_example.html
 http://www.erlang.org/doc/apps/jinterface/java/index.html
-http://docs.oracle.com/javase/tutorial/reflect/member/methodInvocation.html

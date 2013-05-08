@@ -7,7 +7,7 @@ compile:
 jar: compile
 	@mvn package
 	@mvn test
-	@mv target/riak-jmx-1.4.0-jar-with-dependencies.jar ../priv/riak_jmx.jar
+	@mv target/riak-jmx-*-jar-with-dependencies.jar ../priv/riak_jmx.jar
 
 clean:
 	@mvn clean

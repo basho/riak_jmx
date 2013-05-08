@@ -49,7 +49,7 @@ public class Main {
 
     public static Object[] validateArgs(String[] args) throws Exception {
         if(args.length != 3) {
-            throw new Exception("riak_jmx invalid argurment lenght. Expected 3, got " + args.length);
+            throw new Exception("riak_jmx invalid argurment length. Expected 3, got " + args.length);
         }
         int refreshRate = 30000;
         try {

@@ -36,7 +36,7 @@ public class MainTest {
             Main.validateArgs(args);
             fail("args length 0 should have failed");
         } catch (Exception e) {
-            assertEquals("riak_jmx invalid argurment lenght. Expected 3, got 0", e.getMessage());
+            assertEquals("riak_jmx invalid argurment length. Expected 3, got 0", e.getMessage());
         }
 
         try {
@@ -44,7 +44,7 @@ public class MainTest {
             Main.validateArgs(args);
             fail("args length 1 should have failed");
         } catch (Exception e) {
-            assertEquals("riak_jmx invalid argurment lenght. Expected 3, got 1", e.getMessage());
+            assertEquals("riak_jmx invalid argurment length. Expected 3, got 1", e.getMessage());
         }
 
         try {
@@ -52,7 +52,7 @@ public class MainTest {
             Main.validateArgs(args);
             fail("args length 2 should have failed");
         } catch (Exception e) {
-            assertEquals("riak_jmx invalid argurment lenght. Expected 3, got 2", e.getMessage());
+            assertEquals("riak_jmx invalid argurment length. Expected 3, got 2", e.getMessage());
         }
 
         try {
@@ -67,7 +67,7 @@ public class MainTest {
             Main.validateArgs(args);
             fail("args length 4 should have failed");
         } catch (Exception e) {
-            assertEquals("riak_jmx invalid argurment lenght. Expected 3, got 4", e.getMessage());
+            assertEquals("riak_jmx invalid argurment length. Expected 3, got 4", e.getMessage());
         }
 
     }
