@@ -117,15 +117,17 @@ jmx() ->
     case riak_core_config:http_ip_and_port() of
         {WebIp, WebPort} ->
             %% Spin up the JMX server
-            JMXFormatString = "java -server " 
-                ++ "-Dcom.sun.management.jmxremote.authenticate=false " 
+            JMXFormatString = "java -server "
+                ++ "-Dcom.sun.management.jmxremote.authenticate=false "
                 ++ "-Dcom.sun.management.jmxremote.ssl=false "
                 ++ "-Dcom.sun.management.jmxremote.port=~s "
-                ++ "-jar riak_jmx.jar ~s ~s",
+                ++ "-jar riak_jmx.jar ~s ~s ~s",
+
+            {ok, JMXRefreshRate} = application:get_env(riak_jmx, jmx_refresh_seconds),
 
             Cmd = ?FMT(JMXFormatString, [integer_to_list(JMXPort),
-                                         WebIp, 
-                                         integer_to_list(WebPort)]),
+                                         node(), erlang:get_cookie(),
+                                         integer_to_list(JMXRefreshRate)]),
             lager:info(Cmd),
             start_sh(Cmd, priv_dir());
         error ->

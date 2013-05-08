@@ -26,6 +26,8 @@ usage: java -cp riak_jmx.jar com.basho.riak.jmx.Dump HOSTNAME JMX_PORT
 
 Will dump a json object of current JMX values. For debugging, testing, etc...
 
+FYI - This is now the only class that depends on the org.json stuff.
+
 ********************************/
 
 public class Dump {
