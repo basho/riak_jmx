@@ -1,0 +1,19 @@
+Hi!
+
+Welcome to the exciting world of riak_jmx development.
+
+It you want to run the riak_jmx java server outside of the riak_jmx_monitor, try the command below
+
+```
+java -server -Dcom.sun.management.jmxremote.authenticate=false \
+             -Dcom.sun.management.jmxremote.ssl=false \
+             -Dcom.sun.management.jmxremote.port=41110 \
+             -jar ./priv/riak_jmx.jar 127.0.0.1 riak 127.0.0.1
+```
+
+The riak_jmx java code usese DynamicMBean populated
+by a JInterface call to stats.
+
+More information on classes used below:
+https://weblogs.java.net/blog/emcmanus/archive/2006/11/a_real_example.html
+http://www.erlang.org/doc/apps/jinterface/java/index.html

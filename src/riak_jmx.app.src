@@ -8,6 +8,7 @@
   {env,          [
                     {enabled, false}, 
                     {port, 41110},
-                    {sleep_minutes, 10}
+                    {sleep_minutes, 10},
+                    {jmx_refresh_seconds, 30}
                  ]},
   {applications, [kernel, stdlib, sasl, crypto, riak_kv]}]}.
