@@ -1,4 +1,3 @@
-
 all: jar
 
 compile:
@@ -11,6 +10,4 @@ jar: compile
 
 clean:
 	@mvn clean
-	@rm ../priv/riak_jmx.jar
-
-
+	@rm -f ../priv/riak_jmx.jar
