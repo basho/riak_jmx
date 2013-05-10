@@ -20,7 +20,7 @@
 
 -define(FMT(Str, Args), lists:flatten(io_lib:format(Str, Args))).
 -define(MAX_RETRY, 10).
--define(SLEEP_TIME, application:get_env(riak_jmx, sleep_minutes) * 60000). % ten minutes
+
 %% ====================================================================
 %% API
 %% ====================================================================
@@ -60,7 +60,7 @@ handle_info(start, State) ->
 %% Set the state to contain the successfully opened port
 handle_info({Port, {data, {eol, Pid}}}, #state{ pid = undefined } = State) ->
     lager:info("JMX server monitor ~s started.",[Pid]),
-    {noreply, State#state { pid = Pid, port = Port, retry = 0 }};
+    {noreply, State#state { pid = Pid, port = Port}};
 %% Log data from the port at a debug level
 handle_info({Port, {data, {_Type, Data}}}, #state { port = Port, pid = Pid } = State) 
     when is_list(Pid) ->
@@ -71,15 +71,17 @@ handle_info({Port, {exit_status, Rc}}, #state { port = Port, retry = ?MAX_RETRY 
     lager:info("JMX server monitor ~s exited with code ~p.",
                           [State#state.pid, Rc]),
     safe_port_close(Port),
-    erlang:send_after(?SLEEP_TIME, self(), start),
-    {noreply, State#state { port = undefined, pid = undefined }};
+    {ok, SleepMins} = application:get_env(riak_jmx, sleep_minutes),
+    SleepTime = SleepMins * 60000, % ten minutes
+    erlang:send_after(SleepTime, self(), start),
+    {noreply, State#state { port = undefined, pid = undefined, retry = 0 }};
 %% If the port has not yet exited ?MAX_RETRY times, retry
-handle_info({Port, {exit_status, Rc}}, #state { port = Port } = State) ->
-    lager:info("JMX server monitor ~s exited with code ~p. Retrying.",
-                          [State#state.pid, Rc]),
+handle_info({Port, {exit_status, Rc}}, #state { port = Port, retry = Retry } = State) ->
+    lager:info("JMX server monitor ~s exited with code ~p. Retry #~p.",
+                          [State#state.pid, Rc, Retry]),
     safe_port_close(Port),
     erlang:send_after(2000, self(), start),
-    {noreply, State#state { port = undefined, pid = undefined }};
+    {noreply, State#state { port = undefined, pid = undefined, retry = Retry + 1}};
 handle_info({'EXIT', _, _}, #state { port = Port } = State) ->
     lager:info("riak_jmx_monitor received an 'EXIT', but doesn't care"),
     safe_port_close(Port),
