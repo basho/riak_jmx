@@ -8,14 +8,12 @@ start() ->
     application:start(riak_jmx, permanent).
 
 %% @spec stop() -> ok
-%% @doc Stop the riak_jmx application and the calling process.
+%% @doc Stop the riak_jmx application.
 stop() -> stop("riak stop requested").
 
 stop(Reason) ->
-    % we never do an application:stop because that makes it very hard
-    %  to really halt the runtime, which is what we need here.
     error_logger:info_msg(io_lib:format("~p~n",[Reason])),
-    init:stop().    
+    application:stop(riak_jmx).    
 
 stats() ->
     proplists:delete(disk, riak_kv_stat:get_stats()) ++
