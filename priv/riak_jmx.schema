@@ -36,7 +36,7 @@
  "riak_jmx.sleep_minutes",
  fun(Conf) ->
     Millis = cuttlefish_util:conf_get_value("jmx.restart_check", Conf),
-    Millis / 60000 %% needs to be in minutes
+    Millis div 60000 %% needs to be in minutes
  end}.
 
 %% @doc How often to refresh stats.
