@@ -113,29 +113,21 @@ jmx() ->
     %% We're going to pull all of the settings out of the app.config
     %% again, in case they've changed
     {ok, JMXPort} = application:get_env(riak_jmx, port),
-    %% Get HTTP IP/Port from riak_core config; if this fails, we need to
-    %% shutdown this process as riak_jmx requires an HTTP endpoint to connect
-    %% to.
-    case riak_core_config:http_ip_and_port() of
-        {WebIp, WebPort} ->
-            %% Spin up the JMX server
-            JMXFormatString = "java -server "
-                ++ "-Dcom.sun.management.jmxremote.authenticate=false "
-                ++ "-Dcom.sun.management.jmxremote.ssl=false "
-                ++ "-Dcom.sun.management.jmxremote.port=~s "
-                ++ "-jar riak_jmx.jar ~s ~s ~s",
 
-            {ok, JMXRefreshRate} = application:get_env(riak_jmx, jmx_refresh_seconds),
+    %% Spin up the JMX server
+    JMXFormatString = "java -server "
+        ++ "-Dcom.sun.management.jmxremote.authenticate=false "
+        ++ "-Dcom.sun.management.jmxremote.ssl=false "
+        ++ "-Dcom.sun.management.jmxremote.port=~s "
+        ++ "-jar riak_jmx.jar ~s ~s ~s",
 
-            Cmd = ?FMT(JMXFormatString, [integer_to_list(JMXPort),
-                                         node(), erlang:get_cookie(),
-                                         integer_to_list(JMXRefreshRate)]),
-            lager:info(Cmd),
-            start_sh(Cmd, priv_dir());
-        error ->
-            lager:error("No WebIp and/or WebPort defined in app.config. JMX not starting"),
-            undefined
-    end.
+    {ok, JMXRefreshRate} = application:get_env(riak_jmx, jmx_refresh_seconds),
+
+    Cmd = ?FMT(JMXFormatString, [integer_to_list(JMXPort),
+                                 node(), erlang:get_cookie(),
+                                 integer_to_list(JMXRefreshRate)]),
+    lager:info(Cmd),
+    start_sh(Cmd, priv_dir()).
     
 priv_dir() ->
     case code:priv_dir(riak_jmx) of
