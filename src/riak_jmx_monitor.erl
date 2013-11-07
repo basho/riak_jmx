@@ -128,7 +128,7 @@ jmx() ->
                                  integer_to_list(JMXRefreshRate)]),
     lager:info(Cmd),
     start_sh(Cmd, priv_dir()).
-    
+
 priv_dir() ->
     case code:priv_dir(riak_jmx) of
         {error, bad_name} ->

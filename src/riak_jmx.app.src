@@ -2,11 +2,11 @@
 {application,
  riak_jmx,
  [{description,  "riak_jmx"},
-  {vsn,          "1.4.0"},
+  {vsn,          git},
   {registered,   []},
   {mod,          {riak_jmx_app, []}},
   {env,          [
-                    {enabled, false}, 
+                    {enabled, false},
                     {port, 41110},
                     {sleep_minutes, 10},
                     {jmx_refresh_seconds, 30}

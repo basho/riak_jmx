@@ -1,0 +1,40 @@
+%% @doc Java Management Extensions for Riak
+%% on - turn it on
+{mapping, "jmx", "riak_jmx.enabled", [
+    {default, off},
+    {datatype, {enum, [on, off]}}
+]}.
+
+{translation, 
+ "riak_jmx.enabled", 
+ fun(Conf) ->
+  Setting = cuttlefish_util:conf_get_value("jmx", Conf), 
+    case Setting of
+      off -> false;
+      on -> true;
+      _ -> false
+    end
+ end}.
+
+%% @doc Port for JMX to listen on.
+{mapping, "jmx.port", "riak_jmx.port", [
+    {datatype, integer},
+    {default, {{jmx_port}} },
+    {level, advanced}
+]}.
+
+%% @doc time to wait between restarts of JMX
+%% This is only for retrying JMX if the JMX server crashes.
+{mapping, "jmx.restart_check", "riak_jmx.sleep_minutes", [
+    {default, "10m"},
+    {datatype, {duration, m}},
+    {level, advanced}
+]}.
+
+%% @doc How often to refresh stats.
+%% defaults to 30 seconds.
+{mapping, "jmx.refresh_rate", "riak_jmx.jmx_refresh_seconds", [
+    {default, "30s"},
+    {datatype, {duration, s}},
+    {level, advanced}
+]}.
