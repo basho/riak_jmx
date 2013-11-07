@@ -4,3 +4,4 @@ java_src/build
 java_src/target
 .DS_Store
 priv/*.jar
+.eunit
