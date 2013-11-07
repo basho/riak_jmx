@@ -116,8 +116,8 @@ jmx() ->
     %% Get HTTP IP/Port from riak_core config; if this fails, we need to
     %% shutdown this process as riak_jmx requires an HTTP endpoint to connect
     %% to.
-    case riak_core_config:http_ip_and_port() of
-        {WebIp, WebPort} ->
+    case proplists:get_value(http, riak_api_web:get_listeners()) of
+        {_WebIp, _WebPort} ->
             %% Spin up the JMX server
             JMXFormatString = "java -server "
                 ++ "-Dcom.sun.management.jmxremote.authenticate=false "
@@ -132,11 +132,11 @@ jmx() ->
                                          integer_to_list(JMXRefreshRate)]),
             lager:info(Cmd),
             start_sh(Cmd, priv_dir());
-        error ->
+        undefined ->
             lager:error("No WebIp and/or WebPort defined in app.config. JMX not starting"),
             undefined
     end.
-    
+
 priv_dir() ->
     case code:priv_dir(riak_jmx) of
         {error, bad_name} ->
