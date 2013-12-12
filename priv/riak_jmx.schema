@@ -1,3 +1,4 @@
+%%-*- mode: erlang -*-
 %% @doc Java Management Extensions for Riak
 %% on - turn it on
 {mapping, "jmx", "riak_jmx.enabled", [
@@ -5,10 +6,10 @@
     {datatype, {enum, [on, off]}}
 ]}.
 
-{translation, 
- "riak_jmx.enabled", 
+{translation,
+ "riak_jmx.enabled",
  fun(Conf) ->
-  Setting = cuttlefish_util:conf_get_value("jmx", Conf), 
+  Setting = cuttlefish:conf_get("jmx", Conf),
     case Setting of
       off -> false;
       on -> true;
