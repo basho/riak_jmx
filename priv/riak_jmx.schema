@@ -1,21 +1,9 @@
 %%-*- mode: erlang -*-
-%% @doc Java Management Extensions for Riak
-%% on - turn it on
+%% @doc Turns on Java Management Extensions for Riak
 {mapping, "jmx", "riak_jmx.enabled", [
     {default, off},
-    {datatype, {enum, [on, off]}}
+    {datatype, flag}
 ]}.
-
-{translation,
- "riak_jmx.enabled",
- fun(Conf) ->
-  Setting = cuttlefish:conf_get("jmx", Conf),
-    case Setting of
-      off -> false;
-      on -> true;
-      _ -> false
-    end
- end}.
 
 %% @doc Port for JMX to listen on.
 {mapping, "jmx.port", "riak_jmx.port", [
@@ -33,7 +21,6 @@
 ]}.
 
 %% @doc How often to refresh stats.
-%% defaults to 30 seconds.
 {mapping, "jmx.refresh_rate", "riak_jmx.jmx_refresh_seconds", [
     {default, "30s"},
     {datatype, {duration, s}},
