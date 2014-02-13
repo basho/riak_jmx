@@ -9,7 +9,7 @@
 {mapping, "jmx.port", "riak_jmx.port", [
     {datatype, integer},
     {default, {{jmx_port}} },
-    {level, advanced}
+    hidden
 ]}.
 
 %% @doc time to wait between restarts of JMX
@@ -17,12 +17,12 @@
 {mapping, "jmx.restart_check", "riak_jmx.sleep_minutes", [
     {default, "10m"},
     {datatype, {duration, m}},
-    {level, advanced}
+    hidden
 ]}.
 
 %% @doc How often to refresh stats.
 {mapping, "jmx.refresh_rate", "riak_jmx.jmx_refresh_seconds", [
     {default, "30s"},
     {datatype, {duration, s}},
-    {level, advanced}
+    hidden
 ]}.
