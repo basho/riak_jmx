@@ -93,12 +93,12 @@ terminate(_Reason, #state { pid = undefined }) ->
 terminate(_Reason, #state { pid = Pid, port = Port }) ->
     %% JMX server appears to still be running; send kill signal and wait
     %% for it to shutdown.
-    os:cmd(?FMT("kill ~s", [Pid])),
+    _ = os:cmd(?FMT("kill ~s", [Pid])),
     case wait_for_exit(Port, Pid) of
         ok ->
             ok;
         timeout ->
-            os:cmd(?FMT("kill -9 ~s", [Pid])),
+            _ = os:cmd(?FMT("kill -9 ~s", [Pid])),
             wait_for_exit(Port, Pid)
     end.
 
