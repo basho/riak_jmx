@@ -162,8 +162,8 @@ wait_for_exit(Port, Pid) ->
             timeout
     end.
 
-safe_port_close(Port) when is_pid(Port) ->
-    port_close(Port); 
+safe_port_close(Port) when is_port(Port) ->
+    port_close(Port);
 safe_port_close(_Port) ->
     meh.
 
