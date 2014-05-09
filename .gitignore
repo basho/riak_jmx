@@ -6,3 +6,4 @@ java_src/target
 priv/*.jar
 .eunit
 .local_dialyzer_plt
+tags
