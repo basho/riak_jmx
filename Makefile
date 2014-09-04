@@ -16,13 +16,6 @@ clean:
 distclean: clean
 	./rebar delete-deps
 
-test:
-	./rebar skip_deps=true eunit
+DIALYZER_APPS = kernel stdlib erts sasl eunit
 
-docs:
-	./rebar skip_deps=true doc
-
-dialyzer: compile
-	@dialyzer -Wno_return -c apps/riak_jmx/ebin
-
-
+include tools.mk

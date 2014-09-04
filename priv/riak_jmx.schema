@@ -1,0 +1,28 @@
+%%-*- mode: erlang -*-
+%% @doc Turns on Java Management Extensions for Riak
+{mapping, "jmx", "riak_jmx.enabled", [
+    {default, off},
+    {datatype, flag}
+]}.
+
+%% @doc Port for JMX to listen on.
+{mapping, "jmx.port", "riak_jmx.port", [
+    {datatype, integer},
+    {default, {{jmx_port}} },
+    hidden
+]}.
+
+%% @doc time to wait between restarts of JMX
+%% This is only for retrying JMX if the JMX server crashes.
+{mapping, "jmx.restart_check", "riak_jmx.sleep_minutes", [
+    {default, "10m"},
+    {datatype, {duration, m}},
+    hidden
+]}.
+
+%% @doc How often to refresh stats.
+{mapping, "jmx.refresh_rate", "riak_jmx.jmx_refresh_seconds", [
+    {default, "30s"},
+    {datatype, {duration, s}},
+    hidden
+]}.
