@@ -42,14 +42,14 @@ public class Riak implements DynamicMBean {
         Iterator<OtpErlangObject> it = erlStats.iterator();
         while(it.hasNext()) {
             OtpErlangTuple tuple = (OtpErlangTuple)it.next();
-            OtpErlangAtom name = (OtpErlangAtom)tuple.elementAt(0);
+            String name = tuple.elementAt(0).toString();
             OtpErlangObject value = tuple.elementAt(1);
 
             Object objVal = OTPInterop.convert(value);
 
-            keys.remove(name.toString());
+            keys.remove(name);
 
-            stats.add(new Attribute(name.toString(), objVal));
+            stats.add(new Attribute(name, objVal));
         }
 
         // At this point, keys = the set of stats non updated
