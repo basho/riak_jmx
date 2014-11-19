@@ -1,4 +1,5 @@
-
+EXOMETER_PACKAGES = "(basic)"
+export EXOMETER_PACKAGES
 
 .PHONY: deps test
 
