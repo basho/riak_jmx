@@ -68,12 +68,13 @@ handle_info({Port, {data, {_Type, Data}}}, #state { port = Port, pid = Pid } = S
     {noreply, State};
 %% If the port has exited ?MAX_RETRY times, just wait longer!
 handle_info({Port, {exit_status, Rc}}, #state { port = Port, retry = ?MAX_RETRY } = State) ->
-    lager:info("JMX server monitor ~s exited with code ~p.",
-                          [State#state.pid, Rc]),
+    lager:info("JMX server monitor ~s exited with code ~p. Reached maximum retries of ~p.",
+                          [State#state.pid, Rc, ?MAX_RETRY]),
     safe_port_close(Port),
     {ok, SleepMins} = application:get_env(riak_jmx, sleep_minutes),
     SleepTime = SleepMins * 60000, % ten minutes
     erlang:send_after(SleepTime, self(), start),
+    lager:info("JMX server monitor will sleep for ~p minutes before trying again.", [SleepMins]),
     {noreply, State#state { port = undefined, pid = undefined, retry = 0 }};
 %% If the port has not yet exited ?MAX_RETRY times, retry
 handle_info({Port, {exit_status, Rc}}, #state { port = Port, retry = Retry } = State) ->
@@ -163,7 +164,7 @@ wait_for_exit(Port, Pid) ->
     end.
 
 safe_port_close(Port) when is_port(Port) ->
-    port_close(Port);
+    catch port_close(Port);
 safe_port_close(_Port) ->
     meh.
 
@@ -190,3 +191,4 @@ start_link_test() ->
     application:unload(riak_jmx).
 
 -endif.
+
